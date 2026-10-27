@@ -1,0 +1,80 @@
+/* USD FLASH TERMINAL - UI/UX PRO MAX STYLES */
+
+/* Smooth custom scrollbars */
+.custom-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: #070a0f;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #1b2333;
+  border-radius: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: #242f45;
+}
+
+/* High-Contrast Screen Peripheral Edge Flash for Instant Trading Reaction */
+@keyframes flashGreenBorder {
+  0% {
+    box-shadow: inset 0 0 0 8px #00e676, 0 0 60px rgba(0, 230, 118, 0.6);
+    background-color: rgba(0, 230, 118, 0.05);
+  }
+  100% {
+    box-shadow: inset 0 0 0 0 transparent, 0 0 0 transparent;
+    background-color: transparent;
+  }
+}
+
+@keyframes flashRedBorder {
+  0% {
+    box-shadow: inset 0 0 0 8px #ff1744, 0 0 60px rgba(255, 23, 68, 0.6);
+    background-color: rgba(255, 23, 68, 0.05);
+  }
+  100% {
+    box-shadow: inset 0 0 0 0 transparent, 0 0 0 transparent;
+    background-color: transparent;
+  }
+}
+
+.screen-flash-green {
+  animation: flashGreenBorder 1.8s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+.screen-flash-red {
+  animation: flashRedBorder 1.8s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+/* Card Glow Highlights */
+.glow-green {
+  border-color: #00e676 !important;
+  box-shadow: 0 0 30px rgba(0, 230, 118, 0.25) !important;
+}
+
+.glow-red {
+  border-color: #ff1744 !important;
+  box-shadow: 0 0 30px rgba(255, 23, 68, 0.25) !important;
+}
+
+/* Monospace Tabular Numerals Alignment */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Accessible focus styling */
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid #00e5ff;
+  outline-offset: 1px;
+}
+
+/* Smooth transitions */
+button, a {
+  transition-property: color, background-color, border-color, box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}

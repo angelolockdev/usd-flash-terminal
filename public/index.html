@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>USD FLASH // Ultra Low-Latency Economic Squawk & News</title>
+  <meta name="description" content="Terminal de nouvelles économiques USD à ultra-basse latence avec squawk audio et flash d'impact instantané">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            terminal: {
+              bg: '#06080d',
+              card: '#0c1017',
+              border: '#1b2333',
+              hover: '#242f45',
+              green: '#00e676',
+              red: '#ff1744',
+              amber: '#ffab00',
+              cyan: '#00e5ff'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#06080d] text-[#e2e8f0] font-sans antialiased min-h-screen selection:bg-[#00e676] selection:text-black flex flex-col justify-between">
+  
+  <!-- Screen Edge Peripheral Visual Flash (High Contrast for Multi-Monitor Trading) -->
+  <div id="screen-flash" class="fixed inset-0 pointer-events-none z-50 border-0 transition-all duration-300"></div>
+
+  <!-- Main App Shell -->
+  <div class="flex-1">
+    
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-[#1b2333] bg-[#0c1017]/95 backdrop-blur-md sticky top-0 z-40 px-4 py-2.5 transition-colors">
+      <div class="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-3">
+        
+        <!-- Brand & Telemetry Badges -->
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2.5">
+            <div class="relative flex h-3 w-3 items-center justify-center">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00e676] opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-[#00e676]"></span>
+            </div>
+            <span class="font-mono font-extrabold tracking-wider text-base text-white">USD<span class="text-[#00e5ff]">.FLASH</span></span>
+            <span class="text-[10px] bg-[#1b2333] text-[#94a3b8] px-2 py-0.5 rounded font-mono font-bold uppercase tracking-widest border border-[#242f45]">TERMINAL</span>
+          </div>
+
+          <div class="hidden sm:block h-4 w-[1px] bg-[#242f45]"></div>
+
+          <div class="flex items-center gap-2 text-xs font-mono">
+            <span id="ws-badge" class="px-2.5 py-0.5 rounded-full bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 flex items-center gap-1.5 font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> WS REALTIME
+            </span>
+            <span id="massive-badge" class="px-2.5 py-0.5 rounded-full bg-cyan-950/60 text-cyan-400 border border-cyan-800/40 flex items-center gap-1.5 font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> MASSIVE API
+            </span>
+            <span id="latency-badge" class="hidden md:flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#131924] text-[#94a3b8] border border-[#1b2333]">
+              <svg class="w-3 h-3 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+              <span>PING: <strong class="text-white font-bold" id="latency-val">--</strong> ms</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Clocks: New York Wall St & UTC -->
+        <div class="flex items-center gap-2.5 text-xs font-mono">
+          <div class="bg-[#101520] border border-[#1b2333] px-3 py-1 rounded-md flex items-center gap-1.5">
+            <span class="text-[#64748b]">NEW YORK (ET):</span>
+            <span id="clock-ny" class="text-[#38bdf8] font-bold">--:--:--</span>
+          </div>
+          <div class="bg-[#101520] border border-[#1b2333] px-3 py-1 rounded-md flex items-center gap-1.5">
+            <span class="text-[#64748b]">UTC:</span>
+            <span id="clock-utc" class="text-white font-bold">--:--:--</span>
+          </div>
+        </div>
+
+        <!-- Audio Squawk & Settings Toolbar -->
+        <div class="flex items-center gap-2">
+          <!-- Squawk Audio Toggle -->
+          <button id="btn-toggle-sound" class="cursor-pointer flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-md bg-emerald-950/60 border border-emerald-800/60 text-emerald-400 hover:bg-emerald-900/60 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-emerald-400 focus:outline-none">
+            <svg id="sound-icon-on" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+            <svg id="sound-icon-off" class="w-3.5 h-3.5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <line x1="23" y1="9" x2="17" y2="15"></line>
+              <line x1="17" y1="9" x2="23" y2="15"></line>
+            </svg>
+            <span id="sound-label">SQUAWK ON</span>
+          </button>
+
+          <!-- Test Audio Voice -->
+          <button id="btn-test-audio" title="Tester la synthèse vocale instantanée" class="cursor-pointer text-xs font-medium px-2.5 py-1 rounded-md bg-[#131924] hover:bg-[#1b2333] text-[#94a3b8] hover:text-white border border-[#1b2333] transition-all duration-200 flex items-center gap-1">
+            <svg class="w-3 h-3 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="10 8 16 12 10 16 10 8"></polygon>
+            </svg>
+            <span>Test Voix</span>
+          </button>
+
+          <!-- Settings Modal Trigger -->
+          <button id="btn-open-settings" title="Paramètres & Clé API" class="cursor-pointer text-xs p-1.5 rounded-md bg-[#131924] hover:bg-[#1b2333] text-[#94a3b8] hover:text-white border border-[#1b2333] transition-all duration-200">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="max-w-[1440px] mx-auto px-4 py-4 space-y-4">
+      
+      <!-- HERO: Next Immediate High-Impact USD Event / Instant Flash Box -->
+      <section id="hero-event-card" class="bg-[#0c1017] border border-[#1b2333] hover:border-[#242f45] rounded-xl p-5 relative overflow-hidden transition-all duration-300 shadow-2xl">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-[#1b2333] pb-4">
+          
+          <div>
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold uppercase tracking-wide bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> HIGH IMPACT USD
+              </span>
+              <span id="hero-date" class="text-xs text-[#94a3b8] font-mono">
+                Chargement de la prochaine publication...
+              </span>
+            </div>
+            <h1 id="hero-title" class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              US Non-Farm Payrolls (NFP)
+            </h1>
+          </div>
+
+          <!-- High-Precision Countdown Timer (Wall St Synchronized) -->
+          <div class="flex items-center gap-3.5 bg-[#070a0f] border border-[#1b2333] px-4 py-3 rounded-lg shadow-inner">
+            <div class="text-right">
+              <div class="text-[10px] text-[#64748b] font-mono uppercase tracking-widest font-semibold">COMPTE À REBOURS</div>
+              <div id="hero-countdown" class="text-2xl sm:text-3xl font-black font-mono text-[#00e5ff] tabular-nums tracking-wider">
+                00:00:00.00
+              </div>
+            </div>
+            <div class="relative flex h-3 w-3 items-center justify-center">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00e5ff] opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-[#00e5ff]"></span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Metric Numbers Grid (Forecast, Previous, ACTUAL FLASH, Impact Deviation) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+          
+          <!-- Forecast Box -->
+          <div class="bg-[#070a0f] border border-[#1b2333] rounded-lg p-3.5 flex flex-col justify-between">
+            <div class="text-[11px] text-[#64748b] font-mono uppercase font-bold tracking-wider">PRÉVISION (FORECAST)</div>
+            <div id="hero-forecast" class="text-2xl font-extrabold text-slate-200 font-mono mt-1">
+              180K
+            </div>
+            <div class="text-[10px] text-[#475569] font-mono mt-1">Consensus marché</div>
+          </div>
+
+          <!-- Previous Box -->
+          <div class="bg-[#070a0f] border border-[#1b2333] rounded-lg p-3.5 flex flex-col justify-between">
+            <div class="text-[11px] text-[#64748b] font-mono uppercase font-bold tracking-wider">PRÉCÉDENT (PREVIOUS)</div>
+            <div id="hero-previous" class="text-2xl font-extrabold text-slate-300 font-mono mt-1">
+              210K
+            </div>
+            <div class="text-[10px] text-[#475569] font-mono mt-1">Période antérieure</div>
+          </div>
+
+          <!-- ACTUAL / FLASH BOX (Instant Delivery Anchor) -->
+          <div id="hero-actual-container" class="bg-[#070a0f] border-2 border-emerald-500/40 rounded-lg p-3.5 relative overflow-hidden transition-all duration-300 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] text-emerald-400 font-mono uppercase font-extrabold tracking-wider">ACTUAL (RÉSULTAT DIRECT)</span>
+              <span id="hero-actual-badge" class="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-800">
+                TEMPS RÉEL
+              </span>
+            </div>
+            <div id="hero-actual" class="text-3xl font-black text-emerald-400 font-mono mt-1 tracking-tight">
+              --
+            </div>
+            <div class="text-[10px] text-emerald-500/80 font-mono mt-1">Diffusion < 5ms</div>
+          </div>
+
+          <!-- SURPRISE DELTA & USD POLARITY SIGNAL -->
+          <div id="hero-deviation-container" class="bg-[#070a0f] border border-[#1b2333] rounded-lg p-3.5 flex flex-col justify-between">
+            <div class="text-[11px] text-[#64748b] font-mono uppercase font-bold tracking-wider">SIGNAL USD & DÉVIATION</div>
+            <div id="hero-surprise" class="text-sm font-bold text-slate-400 font-mono mt-1">
+              En attente de la publication...
+            </div>
+            <div id="hero-signal-desc" class="text-[10px] text-[#475569] font-mono mt-1">Calcul d'écart automatique</div>
+          </div>
+
+        </div>
+
+        <!-- Latency & Squawk Testing Toolbar -->
+        <div class="mt-4 pt-3 border-t border-[#1b2333] flex flex-wrap items-center justify-between gap-2.5 text-xs">
+          <div class="flex items-center gap-1.5 text-[#94a3b8] font-medium">
+            <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            <span>Simulateur de publication instantanée :</span>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="triggerSimulation('NFP_BEAT')" class="cursor-pointer px-3 py-1.5 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-700/60 text-emerald-300 font-mono font-bold transition-all duration-150 active:scale-95">
+              NFP Beat (+75K ↗ USD)
+            </button>
+            <button onclick="triggerSimulation('NFP_MISS')" class="cursor-pointer px-3 py-1.5 rounded bg-rose-950/60 hover:bg-rose-900 border border-rose-700/60 text-rose-300 font-mono font-bold transition-all duration-150 active:scale-95">
+              NFP Miss (-65K ↘ USD)
+            </button>
+            <button onclick="triggerSimulation('CPI_HOT')" class="cursor-pointer px-3 py-1.5 rounded bg-amber-950/60 hover:bg-amber-900 border border-amber-700/60 text-amber-300 font-mono font-bold transition-all duration-150 active:scale-95">
+              CPI Hot (+0.5% ↗ Hawkish)
+            </button>
+            <button onclick="triggerSimulation('CPI_COOL')" class="cursor-pointer px-3 py-1.5 rounded bg-indigo-950/60 hover:bg-indigo-900 border border-indigo-700/60 text-indigo-300 font-mono font-bold transition-all duration-150 active:scale-95">
+              CPI Cool (-0.3% ↘ Dovish)
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Main Split: USD Economic Calendar (Left) & Massive Wire / Fed Macro (Right) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        
+        <!-- USD Economic Calendar (7 Cols) -->
+        <section class="lg:col-span-7 bg-[#0c1017] border border-[#1b2333] hover:border-[#242f45] rounded-xl p-4 flex flex-col transition-colors shadow-xl">
+          <div class="flex items-center justify-between border-b border-[#1b2333] pb-3 mb-3">
+            <div class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-[#00e5ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <h2 class="font-extrabold text-white text-base">Calendrier Économique USD</h2>
+              <span class="text-xs bg-[#131924] text-[#94a3b8] px-2 py-0.5 rounded font-mono border border-[#1b2333]" id="calendar-count">--</span>
+            </div>
+
+            <!-- Calendar Filters -->
+            <div class="flex items-center gap-1.5 text-xs font-mono">
+              <button id="filter-all" class="cursor-pointer px-2.5 py-1 rounded bg-[#1b2333] text-white font-medium hover:bg-[#242f45] transition-colors">Tous</button>
+              <button id="filter-high" class="cursor-pointer px-2.5 py-1 rounded bg-rose-950/40 border border-rose-800/40 text-rose-300 font-medium hover:bg-rose-900/60 transition-colors flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> High Impact
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto flex-1 max-h-[580px] overflow-y-auto custom-scroll">
+            <table class="w-full text-left text-xs font-mono">
+              <thead class="text-[#64748b] uppercase border-b border-[#1b2333] sticky top-0 bg-[#0c1017] z-10">
+                <tr>
+                  <th class="py-2.5 px-3">Date / Heure (Paris)</th>
+                  <th class="py-2.5 px-2">Imp.</th>
+                  <th class="py-2.5 px-3">Événement Macro</th>
+                  <th class="py-2.5 px-3 text-right">Actual</th>
+                  <th class="py-2.5 px-3 text-right">Forecast</th>
+                  <th class="py-2.5 px-3 text-right">Previous</th>
+                </tr>
+              </thead>
+              <tbody id="calendar-tbody" class="divide-y divide-[#1b2333]/50">
+                <tr>
+                  <td colspan="6" class="py-8 text-center text-[#64748b]">Chargement du flux calendrier...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Right Column: Massive Wire News + Fed Macro Indicators (5 Cols) -->
+        <section class="lg:col-span-5 bg-[#0c1017] border border-[#1b2333] hover:border-[#242f45] rounded-xl p-4 flex flex-col transition-colors shadow-xl">
+          
+          <!-- Tabs Header -->
+          <div class="flex items-center justify-between border-b border-[#1b2333] pb-3 mb-3">
+            <div class="flex items-center gap-4 text-xs font-mono">
+              <button id="tab-btn-news" class="cursor-pointer font-bold text-white border-b-2 border-[#00e5ff] pb-1 transition-colors flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-[#00e5ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+                  <path d="M18 14h-8"></path>
+                  <path d="M15 18h-5"></path>
+                  <path d="M10 6h8v4h-8V6Z"></path>
+                </svg>
+                <span>Dépêches Live (Massive)</span>
+              </button>
+              <button id="tab-btn-macro" class="cursor-pointer font-semibold text-[#94a3b8] hover:text-white pb-1 transition-colors flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-[#94a3b8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 3v18h18"></path>
+                  <path d="m19 9-5 5-4-4-3 3"></path>
+                </svg>
+                <span>Indicateurs Fed</span>
+              </button>
+            </div>
+            
+            <span class="text-[11px] text-[#00e676] font-mono flex items-center gap-1.5 font-bold">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#00e676] animate-pulse"></span> STREAM ON
+            </span>
+          </div>
+
+          <!-- Wire News Tab Content -->
+          <div id="tab-content-news" class="flex-1 flex flex-col">
+            <!-- News Search Filter -->
+            <div class="mb-2.5 relative">
+              <svg class="w-3.5 h-3.5 absolute left-3 top-2.5 text-[#64748b]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="news-search" placeholder="Filtrer (ex: Fed, Powell, NFP, Dollar, CPI)..." 
+                     class="w-full bg-[#070a0f] border border-[#1b2333] focus:border-[#00e5ff] rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-[#64748b] focus:outline-none transition-colors font-mono">
+            </div>
+
+            <div id="news-container" class="space-y-2 overflow-y-auto max-h-[520px] custom-scroll flex-1 pr-1">
+              <div class="text-center py-8 text-xs text-[#64748b]">
+                Connexion au flux Massive.com...
+              </div>
+            </div>
+          </div>
+
+          <!-- Fed Macro Indicators Tab Content -->
+          <div id="tab-content-macro" class="hidden flex-1 space-y-3 overflow-y-auto max-h-[520px] custom-scroll">
+            
+            <!-- Labor Market Card -->
+            <div class="bg-[#070a0f] border border-[#1b2333] p-3.5 rounded-lg">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] text-[#64748b] font-mono uppercase font-bold tracking-wider">MARCHÉ DU TRAVAIL (LABOR MARKET)</span>
+                <span class="text-[9px] bg-[#131924] text-cyan-400 px-1.5 py-0.2 rounded font-mono border border-[#1b2333]">FED STATS</span>
+              </div>
+              <div class="grid grid-cols-2 gap-3 mt-2.5 font-mono">
+                <div>
+                  <span class="text-[11px] text-[#94a3b8]">Taux de chômage :</span>
+                  <div id="macro-unemployment" class="text-xl font-bold text-white mt-0.5">--</div>
+                </div>
+                <div>
+                  <span class="text-[11px] text-[#94a3b8]">Participation active :</span>
+                  <div id="macro-participation" class="text-xl font-bold text-white mt-0.5">--</div>
+                </div>
+              </div>
+              <div id="macro-labor-date" class="text-[10px] text-[#475569] mt-2 font-mono">Dernière mise à jour Federal Reserve</div>
+            </div>
+
+            <!-- Inflation Card -->
+            <div class="bg-[#070a0f] border border-[#1b2333] p-3.5 rounded-lg">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] text-[#64748b] font-mono uppercase font-bold tracking-wider">INFLATION RÉALISÉE (CPI INDEX)</span>
+                <span class="text-[9px] bg-[#131924] text-cyan-400 px-1.5 py-0.2 rounded font-mono border border-[#1b2333]">BLS / FED</span>
+              </div>
+              <div class="mt-2.5 font-mono">
+                <span class="text-[11px] text-[#94a3b8]">Indice CPI actuel :</span>
+                <div id="macro-cpi" class="text-xl font-bold text-[#00e5ff] mt-0.5">--</div>
+              </div>
+              <div id="macro-cpi-date" class="text-[10px] text-[#475569] mt-2 font-mono">Indice officiel des prix à la consommation</div>
+            </div>
+
+            <!-- Treasury Yield Curve Card -->
+            <div class="bg-[#070a0f] border border-[#1b2333] p-3.5 rounded-lg">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] text-[#64748b] font-mono uppercase font-bold tracking-wider">COURBE DES RENDEMENTS DU TRÉSOR (YIELDS)</span>
+                <span class="text-[9px] bg-[#131924] text-cyan-400 px-1.5 py-0.2 rounded font-mono border border-[#1b2333]">US DEBT</span>
+              </div>
+              <div class="grid grid-cols-3 gap-2 mt-2.5 font-mono">
+                <div class="bg-[#0c1017] p-2 rounded border border-[#1b2333]">
+                  <span class="text-[10px] text-[#94a3b8]">1 An :</span>
+                  <div id="macro-yield-1y" class="text-base font-bold text-emerald-400">--</div>
+                </div>
+                <div class="bg-[#0c1017] p-2 rounded border border-[#1b2333]">
+                  <span class="text-[10px] text-[#94a3b8]">5 Ans :</span>
+                  <div id="macro-yield-5y" class="text-base font-bold text-emerald-400">--</div>
+                </div>
+                <div class="bg-[#0c1017] p-2 rounded border border-[#1b2333]">
+                  <span class="text-[10px] text-[#94a3b8]">10 Ans :</span>
+                  <div id="macro-yield-10y" class="text-base font-bold text-emerald-400">--</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Settings Modal (API Key configuration for GitHub Pages & Local) -->
+  <div id="settings-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-[#0c1017] border border-[#1b2333] rounded-xl max-w-md w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-[#1b2333] pb-3">
+        <h3 class="font-bold text-white text-base flex items-center gap-2">
+          <svg class="w-4 h-4 text-[#00e5ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          Paramètres du Terminal
+        </h3>
+        <button id="btn-close-settings" class="cursor-pointer text-[#94a3b8] hover:text-white p-1">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-[#94a3b8] font-mono mb-1">Clé d'API Massive (MASSIVE_API_KEY) :</label>
+          <input type="password" id="input-massive-key" placeholder="oHEzQf..." 
+                 class="w-full bg-[#070a0f] border border-[#1b2333] rounded px-3 py-2 text-white font-mono focus:border-[#00e5ff] focus:outline-none">
+          <p class="text-[11px] text-[#64748b] mt-1">
+            Si vous utilisez la version web statique (GitHub Pages / Vercel), votre clé est sauvegardée localement dans votre navigateur uniquement.
+          </p>
+        </div>
+
+        <div>
+          <label class="block text-[#94a3b8] font-mono mb-1">Voix de synthèse (Audio Squawk) :</label>
+          <select id="select-squawk-voice" class="w-full bg-[#070a0f] border border-[#1b2333] rounded px-3 py-2 text-white font-mono focus:border-[#00e5ff] focus:outline-none">
+            <option value="default">Voix par défaut du système</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-[#1b2333]">
+        <button id="btn-save-settings" class="cursor-pointer px-4 py-1.5 rounded bg-[#00e5ff] hover:bg-[#00c4dc] text-black font-bold font-mono text-xs transition">
+          Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-[#1b2333] py-3 px-4 text-center text-xs font-mono text-[#64748b]">
+    USD Flash Terminal — Conçu pour le trading haute précision. Données certifiées Massive.com & Federal Reserve.
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>
