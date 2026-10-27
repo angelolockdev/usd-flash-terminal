@@ -34,8 +34,14 @@ La variable d'environnement `MASSIVE_API_KEY` est détectée automatiquement dep
 ### 2. Lancement du serveur
 
 ```bash
-npm start
+npm install
+npm run dev        # compile le CSS Tailwind v4 puis lance le serveur
+# npm run watch:css (dans un 2e terminal) pendant l'édition du design
 ```
+
+> Le design system source est `src/ui/input.css` (Tailwind v4, tokens `@theme`). `public/style.css` est **généré** et versionné pour que GitHub Pages / Vercel le servent sans étape de build. Après toute modification de classes dans `public/index.html` ou `public/app.js`, relancer `npm run build:css`.
+>
+> Raccourcis clavier : `1`–`4` simulations, `M` coupe/active le squawk, `/` recherche dans les dépêches, `↑`/`↓` + `Entrée` sur le calendrier pour épingler un événement dans le panneau principal.
 
 Le terminal est immédiatement accessible dans votre navigateur sur :
 👉 **http://localhost:3000**
